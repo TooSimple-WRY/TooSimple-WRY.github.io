@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图书馆管理系统</title>
+    <!-- 引入外部的样式文件 -->
+    <link rel="stylesheet" href="./css/index.css">
+    <!-- 引入Element UI样式 -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <!--  使用CDN引入Vue模块 -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.11"></script>
+    <!-- 引入Element组件库 -->
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <!-- 引入Axios组件库 -->
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+</head>
+
+<body>
+    <div id="app">
+        <el-container>
+            <el-header style="height: 70px;">图书馆书籍管理系统</el-header>
+            <el-container>
+                <el-aside width="180px">
+                    <el-menu default-active="1" class="el-menu-vertical-demo">
+                        <el-menu-item index="1">
+                            <i class="el-icon-reading"></i>
+                            <span slot="title">书籍管理</span>
+                        </el-menu-item>
+                        <el-menu-item index="2">
+                            <i class="el-icon-document"></i>
+                            <span slot="title">库存管理</span>
+                        </el-menu-item>
+                        <el-menu-item index="3">
+                            <i class="el-icon-info"></i>
+                            <span slot="title">借阅信息</span>
+                        </el-menu-item>
+                        <el-menu-item index="4">
+                            <i class="el-icon-user"></i>
+                            <span slot="title">读者信息</span>
+                        </el-menu-item>
+                    </el-menu>
+                </el-aside>
+                <el-container>
+                    <el-main>
+                        <!-- 面包屑导航 -->
+                        <el-breadcrumb separator-class="el-icon-arrow-right">
+                            <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
+                            <el-breadcrumb-item>书籍管理</el-breadcrumb-item>
+                        </el-breadcrumb>
+                        <!-- 表单 -->
+                        <el-form :inline="true" style="margin-top: 20px;">
+                            <el-row>
+                                <el-col :span="12" style="text-align: left;">
+                                    <el-form-item label="请输入查询条件">
+                                        <el-input v-model="inputstr" placeholder="输入查询条件"></el-input>
+                                    </el-form-item>
+                                </el-col>
+                                <el-col :span="8" style="text-align: right; padding-right: 10px;">
+                                    <el-button-group>
+                                        <el-button type="primary" icon="el-icon-search" @click="query_books()">查询
+                                        </el-button>
+                                        <el-button type="primary" icon="el-icon-tickets" @click="get_all_books()">全部
+                                        </el-button>
+                                        <el-button type="primary" icon="el-icon-circle-plus-outline"
+                                            @click="add_book()">添加</el-button>
+                                    </el-button-group>
+                                </el-col>
+                                <el-col :span="2">
+                                    <el-upload>
+                                        <el-button type="primary">导入Excel</el-button>
+                                    </el-upload>
+                                </el-col>
+                                <el-col :span="2">
+                                    <el-button type="primary">导出Excel</el-button>
+                                </el-col>
+                            </el-row>
+                        </el-form>
+                        <!-- 表格 -->
+                        <el-table :data="page_books" border style="width: 100%" size="mini"
+                            @selection-change="handle_selection_change">
+                            <el-table-column type="selection" align="center" min-width="5%">
+                            </el-table-column>
+                            <el-table-column type="index" label="序号" align="center" min-width="5%">
+                            </el-table-column>
+                            <el-table-column prop="bid" label="编号" align="center" min-width="12%">
+                            </el-table-column>
+                            <el-table-column prop="bname" label="书名" align="center" min-width="15%">
+                            </el-table-column>
+                            <el-table-column prop="bauthor" label="作者" align="center" min-width="15%">
+                            </el-table-column>
+                            <el-table-column prop="bcompany" label="出版社" align="center" min-width="15%">
+                            </el-table-column>
+                            <el-table-column prop="btime" label="出版日期" align="center" min-width="10%">
+                            </el-table-column>
+                            <el-table-column prop="bsort" label="分类" align="center" min-width="10%">
+                            </el-table-column>
+                            <el-table-column label="操作" align="center" min-width="13%">
+                                <template slot-scope="scope">
+                                    <el-button type="success" icon="el-icon-more" size="mini" circle
+                                        @click="view_book(scope.row)"></el-button>
+                                    <el-button type="primary" icon="el-icon-edit" size="mini" circle
+                                        @click="update_book(scope.row)"></el-button>
+                                    <el-button type="danger" icon="el-icon-delete" size="mini" circle
+                                        @click="delete_book(scope.row)"></el-button>
+                                </template>
+                            </el-table-column>
+                        </el-table>
+                        <!-- 分页 -->
+                        <el-row style="margin-top: 10px;">
+                            <el-col :span="8" style="text-align: left;">
+                                <el-button type="danger" icon="el-icon-delete" @click="delete_books()" size="mini">批量删除
+                                </el-button>
+                            </el-col>
+                            <el-col :span="16" style="text-align: right;">
+                                <el-pagination @size-change="handle_size_change" @current-change="handle_current_change"
+                                    :current-page="currentpage" :page-sizes="[5, 10, 50, 100]" :page-size="pagesize"
+                                    layout="total, sizes, prev, pager, next, jumper" :total="total">
+                                </el-pagination>
+                            </el-col>
+                        </el-row>
+                        <!-- 弹出框的学生明细表单 -->
+                        <el-dialog :title="dialog_title" :visible.sync="dialog_visible" width="700px"
+                            @close="close_dialog_form('book_form')" :close-on-click-modal="false">
+                            <el-form :model="book_form" :rules="rules" ref="book_form"
+                                style="margin-left: 10px; margin-right: 15px;" label-width="90px" label-position="right"
+                                size="mini">
+                                <el-upload class="avatar-uploader"
+                                    :show-file-list="false" :http-request="upload_pic_post" :disabled="is_view" style="text-align: center; margin-bottom: 20px;"> 
+                                    <img v-if="book_form.bimage" :src="book_form.bimage_url" class="avatar">
+                                    <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+                                </el-upload>
+                                <el-row>
+                                    <el-col :span="12">
+                                        <el-form-item label="编号：" prop="bid">
+                                            <el-input v-model="book_form.bid" :disabled="is_view || is_edit"
+                                                suffix-icon="el-icon-edit"></el-input>
+                                        </el-form-item>
+                                    </el-col>
+                                    <el-col :span="12">
+                                        <el-form-item label="书名：" prop="bname">
+                                            <el-input v-model="book_form.bname" :disabled="is_view"
+                                                suffix-icon="el-icon-edit"></el-input>
+                                        </el-form-item>
+                                    </el-col>
+                                </el-row>
+                                <el-row>
+                                    <el-col :span="12">
+                                        <el-form-item label="作者：" prop="bauthor">
+                                            <el-input v-model="book_form.bauthor" :disabled="is_view"
+                                                suffix-icon="el-icon-edit"></el-input>
+                                        </el-form-item>
+                                    </el-col>
+                                    <el-col :span="12">
+                                        <el-form-item label="出版社：">
+                                            <el-input v-model="book_form.bcompany" :disabled="is_view"
+                                                suffix-icon="el-icon-edit">
+                                            </el-input>
+                                        </el-form-item>
+                                    </el-col>
+                                </el-row>
+                                <el-row>
+                                    <el-col :span="12">
+                                        <el-form-item label="出版日期：">
+                                            <el-input v-model="book_form.btime" :disabled="is_view"
+                                                suffix-icon="el-icon-edit"></el-input>
+                                        </el-form-item>
+                                    </el-col>
+                                    <el-col :span="12">
+                                        <el-form-item label="分类：">
+                                            <el-input v-model="book_form.bsort" :disabled="is_view"
+                                                suffix-icon="el-icon-edit"></el-input>
+                                        </el-form-item>
+                                    </el-col>
+                                </el-row>
+                                <el-row>
+                                    <el-col :span="24">
+                                        <el-form-item label="简介：">
+                                            <el-input type="textarea" v-model="book_form.bcontent" :disabled="is_view">
+                                            </el-input>
+                                        </el-form-item>
+                                    </el-col>
+                                </el-row>
+                            </el-form>
+                            <span slot="footer" class="dialog-footer">
+                                <el-button type="primary" size="mini" @click="submit_book_form('book_form')"
+                                    v-show="!is_view">确 定</el-button>
+                                <el-button type="info" size="mini" @click="close_dialog_form('book_form')">取 消
+                                </el-button>
+                            </span>
+                        </el-dialog>
+                    </el-main>
+                    <el-footer style="height: 30px;">图书馆书籍管理系统 版权所有：zyx, wry | 2020</el-footer>
+                </el-container>
+            </el-container>
+        </el-container>
+    </div>
+
+</body>
+
+</html>
+
+<!-- 引入Vue代码 -->
+<script src="js/index.js"></script>

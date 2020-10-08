@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录界面</title>
+    <!-- 引入外部的样式文件 -->
+    <link rel="stylesheet" href="./css/login.css">
+    <!-- 引入Element UI样式 -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <!--  使用CDN引入Vue模块 -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.11"></script>
+    <!-- 引入Element组件库 -->
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <!-- 引入Axios组件库 -->
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+</head>
+
+<body>
+    <div class="wrapper">
+        <div id="loginForm" class="login">
+            <p class="title" v-if="state=='login'">
+                <el-select v-model="user_type" style="margin-left: 10px; margin-top: 15px;">
+                    <el-option v-for="item in user_type_options" :key="item.value" :label="item.label"
+                        :value="item.value">
+                    </el-option>
+                </el-select>
+                <el-link style="color:#999; font-size:20px; margin-left: 10px; ">登 录</el-link>
+            </p>
+            <p class="title" v-if="state=='signup'">
+                <el-link style="color:#999; font-size:20px; margin-left: 10px; margin-top: 15px;">新用户注册</el-link>
+            </p>
+
+
+
+            <el-form :model="register_form" :rules="rules" ref="register_form">
+                <el-form-item prop="user_id">
+                    <el-link style="color:#999; font-size:18px; margin-left: 10px; margin-right: 20px;">用户: </el-link>
+                    <el-input v-model="register_form.user_id" style="width: 220px;"></el-input>
+                </el-form-item>
+
+                <el-form-item>
+                    <a style="color:#999; font-size:18px; margin-left: 10px; margin-right: 20px;">密码: </a>
+                    <el-input v-model="register_form.password" type="password" style="width:220px;"></el-input>
+                </el-form-item>
+
+                <el-form-item v-if="state=='signup'">
+                    <a style="color:#999; font-size:18px; margin-left: 10px; margin-right: 20px;">确认密码: </a>
+                    <el-input v-model="register_form.passwordAgain" type="password" style="width:183px;"></el-input>
+                </el-form-item>
+
+                <el-form-item v-if="state=='signup'">
+                    <a style="color:#999; font-size:18px; margin-left: 10px; margin-right: 20px;">真实姓名: </a>
+                    <el-input v-model="register_form.realName" style="width:183px;"></el-input>
+                </el-form-item>
+
+                <el-form-item v-if="state=='signup'">
+                    <a style="color:#999; font-size:18px; margin-left: 10px; margin-right: 20px;">性别: </a>
+                    <el-select v-model="register_form.gender">
+                        <el-option v-for="item in gender_options" :key="item.value" :label="item.label"
+                            :value="item.value">
+                        </el-option>
+                    </el-select>
+                </el-form-item>
+
+                <el-form-item v-if="state=='signup'">
+                    <a style="color:#999; font-size:18px; margin-left: 10px; margin-right: 20px;">用户类别: </a>
+                    <el-select v-model="register_form.category" style="width:183px;">
+                        <el-option v-for="item in category_options" :key="item.value" :label="item.label"
+                            :value="item.value">
+                        </el-option>
+                    </el-select>
+                </el-form-item>
+
+                <el-form-item v-if="state=='signup'">
+                    <a style="color:#999; font-size:18px; margin-left: 10px; margin-right: 20px;">手机号: </a>
+                    <el-input v-model="register_form.mobile" style="width: 200px;"></el-input>
+                </el-form-item>
+
+                <el-form-item v-if="state=='signup'">
+                    <a style="color:#999; font-size:18px; margin-left: 10px; margin-right: 20px;">邮箱: </a>
+                    <el-input v-model="register_form.email" style="width: 220px;"></el-input>
+                </el-form-item>
+
+                <el-form-item>
+                    <el-link type="primary" style="float: right; font-size: 14px;"
+                        @click="switchState('register_form')">{{ info }}</el-link>
+                </el-form-item>
+
+                <el-form-item v-if="state=='login'" style="text-align: center;">
+                    <el-button type="primary" @click="login()" style="width: 100%; height: 100%; font-size:16px;" plain>
+                        登 录</el-button>
+                </el-form-item>
+
+                <el-form-item v-if="state=='signup'">
+                    <el-button type="primary" @click="signup('register_form') "
+                        style="width: 100%; height: 100%; font-size:16px;" plain>注 册</el-button>
+                </el-form-item>
+            </el-form>
+        </div>
+    </div>
+</body>
+
+</html>
+
+<!-- 引入Vue代码 -->
+<script src="js/login.js"></script>
